@@ -20,7 +20,7 @@ const register = async (req,res)=> {
             _id: user._id,
             role: user.role
         }
-        res.cookie('token',token,{maxAge: 60*60*1000},{secure: true, sameSite: 'none', path: '/'});
+        res.cookie('token',token,{maxAge: 60*60*1000},{httpOnly: true, secure: true, sameSite: 'none', path: '/'});
         res.status(201).json({
             user: reply,
             message: "User Registered Successfully"
@@ -50,7 +50,7 @@ const login= async(req,res)=> {
         }
 
         const token= jwt.sign({_id:user._id, emailId: emailId, role:user.role},process.env.JWT_KEY,{expiresIn: 60*60});
-        res.cookie('token',token,{maxAge: 60*60*1000},{secure: true, sameSite: 'none', path: '/'});
+        res.cookie('token',token,{maxAge: 60*60*1000},{httpOnly: true, secure: true, sameSite: 'none', path: '/'});
         res.status(201).json ({
             user: reply,
             message:"Login Successfully"
@@ -68,7 +68,7 @@ const logout= async(req,res)=> {
         await redisClient.set(`token:${token}`,'Blocked');
         await redisClient.expireAt(`token:${token}`, payload.exp);
 
-        res.cookie("token",null,{expires: new Date(Date.now())},{secure: true, sameSite: 'none', path: '/'});
+        res.cookie("token",null,{expires: new Date(Date.now())},{httpOnly: true, secure: true, sameSite: 'none', path: '/'});
         res.send("Logged out successfully");
     }
     catch(err) {
@@ -84,7 +84,7 @@ const adminRegister= async(req,res)=> {
 
         const user= await User.create(req.body);
         const token= jwt.sign({_id:user._id, emailId: emailId, role:user.role}, process.env.JWT_KEY, {expiresIn: 60*60});
-        res.cookie('token',token,{maxAge: 60*60*1000},{secure: true, sameSite: 'none', path: '/'});
+        res.cookie('token',token,{maxAge: 60*60*1000},{httpOnly: true, secure: true, sameSite: 'none', path: '/'});
         res.status(201).send('user registered Successfully');
 
     }
