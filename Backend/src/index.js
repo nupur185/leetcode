@@ -12,7 +12,7 @@ const cors= require('cors');
 const videoRouter = require('./routes/videoCreator');
 
 app.use(cors({
-    origin: 'http://localhost:5173',
+    origin: 'https://leetcode-frontend-blkw.onrender.com',
     credentials: true
 }))
 
