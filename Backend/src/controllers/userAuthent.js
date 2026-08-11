@@ -20,7 +20,7 @@ const register = async (req,res)=> {
             _id: user._id,
             role: user.role
         }
-        res.cookie('token',token,{maxAge: 60*60*1000},{httpOnly: true, secure: true, sameSite: 'none', path: '/'});
+        res.cookie('token',token,{maxAge: 60*60*1000 ,httpOnly: true, secure: true, sameSite: 'none', path: '/'});
         res.status(201).json({
             user: reply,
             message: "User Registered Successfully"
