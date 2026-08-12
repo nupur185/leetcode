@@ -10,6 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@cashfreepayments/cashfree-js": "^1.0.7",
     "@hookform/resolvers": "^5.5.7",
     "@monaco-editor/react": "^4.7.0",
     "@reduxjs/toolkit": "^2.12.0",
