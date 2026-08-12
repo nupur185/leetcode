@@ -11,12 +11,95 @@ const aiRouter= require("./routes/aiChatting");
 const cors= require('cors');
 const videoRouter = require('./routes/videoCreator');
 
+
+//for payment--------------------------------
+const crypto= require('crypto');
+const {Cashfree} = require('cashfree-pg');
+const Joi = require('joi');
+//-----------------------------------------
+
 app.use(cors({
     origin: 'https://leetcode-frontend-blkw.onrender.com',
     credentials: true
 }))
 
 app.use(express.json());
+
+//for payment   ---------------------------------------------------------------------
+app.use(express.static('.'));
+app.use(express.urlencoded({extended:true}));
+
+//for payment
+const cashfree = new Cashfree(Cashfree.SANDBOX, process.env.CLIENT_ID, process.env.CLIENT_SECRET);
+
+
+function generateOrderId() {
+    const uniqueId= crypto.randomBytes(16).toString('hex');
+    const hash= crypto.createHash('sha256');
+    hash.update(uniqueId);
+    const orderId= hash.digest('hex');
+
+    return orderId.substr(0,12);
+}
+
+app.get('/payment', async(req,res)=> {
+    try {
+        //const { amount, customerId, customerName, customerEmail, customerPhone } = req.body;
+        const request= {
+            order_amount: 1.00,
+            order_currency: "INR",
+            order_id: generateOrderId(),
+            customer_details: {
+                customer_id: "USER123",
+                customer_name: "joe",
+                customer_email: "joe.s@cashfree.com",
+                customer_phone: "+919876543210"
+            },
+        };
+
+        // Cashfree.PGCreateOrder("2026-08-08", request).then(response => {
+        //     console.log(response.data);
+        //     res.json(response.data);
+        // }).catch(error => {
+        //     console.error(error.response.data.message);
+        // })
+console.log("hit");
+        const response = await cashfree.PGCreateOrder(request);
+        console.log("miss");
+        
+        console.log("Order created successfully:", response.data);
+        res.json(response.data); // Send payment session data to frontend
+
+
+    }
+    catch(error) {
+        console.error("❌ Cashfree Error:", error.message);
+        return res.status(statusCode).json({
+            success: false,
+            error: errorMessage
+        });
+    }
+});
+app.post('/verify', async(req,res)=> {
+    try {
+        const { orderId } = req.body;
+        cashfree.PGOrderFetchPayments(orderId).then ((response)=> {
+            res.json(response.data);
+        }). catch(error => {
+            console.error(error.response.data.message);
+        })
+    }
+    catch(error) {
+        let statusCode;
+        console.error("Cashfree Error:", error.message);
+        return res.status(statusCode).json({
+            success: false,
+            error: errorMessage
+        });
+    }
+});
+//  ----------------------------------------------------------------------------------
+
 app.use(cookieparser());
 
 app.use('/user',authRouter);
