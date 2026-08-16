@@ -1,3 +1,4 @@
+const axios = require('axios');
 const {getLanguageById,submitBatch,submitToken}= require('../utils/problemUtility');
 const Problem= require("../models/problem");
 const User = require("../models/user");
@@ -8,34 +9,65 @@ const SolutionVideo = require('../models/solutionVideo');
 const createProblem= async(req,res) => {
     const {title, description, difficulty, tags, visibleTestCases, hiddenTestCases, startCode, referenceSolution, problemCreator} = req.body;
     try {
+            const extMap = {
+      cpp: 'cpp',
+      python: 'py',
+      javascript: 'js',
+      java: 'java',
+      c: 'c',
+    };
+    const allTestCases = [...(visibleTestCases || []), ...(hiddenTestCases || [])];
+
+
         for(const {language, completeCode} of referenceSolution) {
-            const languageId= getLanguageById(language);
+             let lang = language.toLowerCase();
+      if (lang === 'c++' || lang === 'cpp') {
+        lang = 'cpp';
+      }
 
-        //  creating batch submissions
-            const submissions= visibleTestCases.map((testcase)=> ({ //to create submission array
-                source_code: completeCode,
-                language_id: languageId,
-                stdin: testcase.input,
-                expected_output: testcase.output
-            }));
-
-            const submitResult= await submitBatch(submissions);
-            console.log(submitResult);
-
-            const resultToken= submitResult.map((value)=> value.token); // extract tokens and put it in an array
-            const testResult= await submitToken(resultToken);
-
-            console.log(testResult);
-
-            for(const test of testResult) {
-                if(test.status_id!=3) {
-                    return res.status(400).send("Error occured");
-                }
+            if (!extMap[lang]) {
+                return res.status(400).send(`Unsupported language: ${language}`);
             }
+            const ext = extMap[lang];
+            const fileName = `index.${extMap[lang]}`;
 
+        for (const testCase of allTestCases) {
+        try {
+            const stdin = testCase.input.replace(/\\n/g, '\n');
+          const response = await axios.post(
+            'https://onecompiler-apis.p.rapidapi.com/api/v1/run',
+            {
+              language:lang,
+              stdin: testCase.input,
+              files: [{ name: fileName, content: completeCode }],
+            },
+            {
+              headers: {
+                'x-rapidapi-key': process.env.RAPIDAPI_KEY,
+                'x-rapidapi-host': 'onecompiler-apis.p.rapidapi.com',
+                'Content-Type': 'application/json',
+              },
+              timeout: 15000,
+            }
+          );
+             const data = response.data;
+          const stdout = data.stdout || '';
+          const stderr = data.stderr || '';
+           console.log(`stdout for ${language}:`, stdout); 
+
+            if (data.status !== 'success' || stdout.trim() !== testCase.output.trim()) {
+            const errorMsg = stderr || (data.status !== 'success' ? 'Execution error' : 'Output mismatch');
+            // For hidden test cases, don't expose input in error (optional)
+            const testInput = testCase.isHidden ? '(hidden)' : testCase.input;
+            return res.status(400).send(
+              `Reference solution failed for ${language} on test case: ${testInput}. ${errorMsg}`
+            );
+          }
+        } catch (err) {
+          return res.status(400).send(`Error running reference solution for ${language}: ${err.message}`);
         }
-
-        //now, store it (ref. code) in our db:
+      }
+    }
 
         const userProblem= await Problem.create({
             ...req.body,
@@ -195,7 +227,7 @@ const submittedProblem= async(req,res)=> {
 
         const ans= await Submission.find({userId, problemId});
 
-        if(ans.length==0) res.status(200).send("No submission is present");
+        if(ans.length == 0) return res.status(200).json([]);
 
         res.status(200).send(ans);  
     }
