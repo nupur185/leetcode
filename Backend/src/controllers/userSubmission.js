@@ -224,7 +224,7 @@ const runCode= async (req,res)=> {
         const stderr = data.stderr || ''; // compilation/runtime error
         const executionTime = parseFloat(data.executionTime) || 0; // in seconds
         const memoryUsed = parseInt(data.memoryUsed) || 0;
-
+      console.log(stdout);
         const expected = test.output.trim();
         const actual = stdout.trim();
         const passed = data.status === 'success' && actual === expected;
