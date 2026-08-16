@@ -3,6 +3,13 @@ const Submission= require("../models/submission");
 const User= require("../models/user");
 const {getLanguageById,submitBatch,submitToken}= require("../utils/problemUtility");
 
+const extMap = {
+      cpp: 'cpp',
+      python: 'py',
+      javascript: 'js',
+      java: 'java',
+    };
+
 const submitCode= async (req,res)=> {
 
     try {
@@ -14,14 +21,19 @@ const submitCode= async (req,res)=> {
         if(!userId || !code || !problemId || !language) 
             return res.status(400).send("some field missing");
 
-         if(language==='cpp') language='c++'
+        const problem = await Problem.findById(problemId);
+    if (!problem) {
+      return res.status(404).send('Problem not found');
+    }
+    const ext = extMap[language];
+    if (!ext) {
+      return res.status(400).send('Unsupported language');
+    }
+    const fileName = `index.${ext}`;
 
-        //fetch problem from database
-        const problem= await Problem.findById(problemId);
-        //hidden Test Case 
-
-        //firstly store the submissions in db
-        // console.log("ok");
+const allTestCases = [...problem.visibleTestCases, ...problem.hiddenTestCases];
+    const totalTestCases = allTestCases.length;
+        
         const submittedResult= await Submission.create( {
             userId,
             problemId,
@@ -29,45 +41,91 @@ const submitCode= async (req,res)=> {
             language,
             testCasesPassed:0,
             status: "pending",
-            testCasesTotal: problem.hiddenTestCases.length
-        })
-        // console.log("ok");
+            testCasesTotal: totalTestCases
+        });
 
-    //   Now, submit code to judge0
-        const languageId= getLanguageById(language);
-        const submissions= Problem.hiddenTestCases.map((testcase)=> ({
-                source_code: code,
-                language_id: languageId,
-                stdin: testcase.input,
-                expected_output: testcase.output
-            }));
-        const submitResult= await submitBatch(submissions);
-        const resultToken= submitResult.map((value)=> value.token); 
-        const testResult= await submitToken(resultToken);
-
-        //UPDATE SUBMITTED RESULT
+        
         let testCasesPassed=0;
         let runtime=0;
         let memory=0;
         let status= 'accepted';
         let errorMessage= null;
+            const testResults = [];
 
-        for(const test of testResult) {
-            if(test.status_id==3) {
-                testCasesPassed++;
-                runtime= runtime+parseFloat(test.time);
-                memory=Math.max(memory,test.memory);
+        for(const test of allTestCases) {
+            try {
+        const response = await axios.post(
+          'https://onecompiler-apis.p.rapidapi.com/api/v1/run',
+          {
+            language,
+            stdin: test.input,
+            files: [{ name: fileName, content: code }],
+          },
+          {
+            headers: {
+              'x-rapidapi-key': process.env.RAPIDAPI_KEY, 
+              'x-rapidapi-host': 'onecompiler-apis.p.rapidapi.com',
+              'Content-Type': 'application/json',
+            },
+            timeout: 15000,
+          }
+        );
+
+        const data = response.data;
+        const stdout = data.stdout || '';
+        const stderr = data.stderr || '';
+        const executionTime = parseFloat(data.executionTime) || 0;
+        const memoryUsed = parseInt(data.memoryUsed) || 0;
+
+        const expected = test.output.trim();
+        const actual = stdout.trim();
+        const passed = data.status === 'success' && actual === expected;
+
+        if (passed) {
+          testCasesPassed++;
+        } else {
+          // Agar koi test fail ho, toh overall status change karo
+          if (status === 'accepted') {
+            if (data.status !== 'success' || stderr) {
+              status = 'error';
+              errorMessage = stderr || 'Execution error';
+            } else {
+              status = 'wrong';
+              errorMessage = 'Output mismatch';
             }
-            else {
-                if(test.status_id==4) {
-                    status= 'error';
-                    errorMessage= test.stderr;
-                }
-                else {
-                    status= 'wrong';
-                    errorMessage= test.stderr;
-                }
-            }
+          }
+          // Pehla error message store karo
+          if (!errorMessage) {
+            errorMessage = stderr || (data.status !== 'success' ? 'Execution error' : 'Output mismatch');
+          }
+        }
+
+        runtime += executionTime;
+        if (memoryUsed > memory) memory = memoryUsed;
+
+        testResults.push({
+          passed,
+          stdout: actual,
+          stderr,
+          executionTime,
+          memory: memoryUsed,
+          status: data.status,
+        });
+      } catch (err) {
+        // Agar API call fail ho (network/timeout)
+        if (status === 'accepted') status = 'error';
+        if (!errorMessage) {
+          errorMessage = err.message || 'Request failed';
+        }
+        testResults.push({
+          passed: false,
+          stdout: '',
+          stderr: err.message,
+          executionTime: 0,
+          memory: 0,
+          status: 'error',
+        });
+      }
         }
 
     //  Save result in database in submission
@@ -80,13 +138,15 @@ const submitCode= async (req,res)=> {
 
     await submittedResult.save();
 
-    //check it that problemid present in totalproblemsolved by user or not, if not, then insert
-    if(!req.result.problemSolved.includes(problemId)) {
-        req.result.problemSolved.push(problemId);   //isse sirf push changes apne local (like ram) me hua h
-        await req.result.save();                    // isse ab permanently db me store ho jayega0
+    if (status === 'accepted') {
+      if (!req.result.problemSolved.includes(problemId)) {
+        req.result.problemSolved.push(problemId);
+        await req.result.save();
+      }
     }
 
-    const accepted = (status == 'accepted')
+    // 5. Response bhejo
+    const accepted = status === 'accepted';
     res.status(201).json({
       accepted,
       totalTestCases: submittedResult.testCasesTotal,
@@ -98,6 +158,7 @@ const submitCode= async (req,res)=> {
 
     }
     catch(err) {
+        console.error(err);
         res.status(500).send("internal server error"+err);
     }
 
@@ -116,51 +177,108 @@ const runCode= async (req,res)=> {
             return res.status(400).send("some field missing");
 
         const problem= await Problem.findById(problemId);
-        if(language==='cpp') language='c++'
+        if (!problem) {
+            return res.status(404).send('Problem not found');
+        }
 
-    //   Now, submit code to judge0
-        const languageId= getLanguageById(language);
-        const submissions= Problem.visibleTestCases.map((testcase)=> ({
-                source_code: code,
-                language_id: languageId,
-                stdin: testcase.input,
-                expected_output: testcase.output
-            }));
-        const submitResult= await submitBatch(submissions);
-        const resultToken= submitResult.map((value)=> value.token); 
-        const testResult= await submitToken(resultToken);
+        const ext = extMap[language];
+        if (!ext) {
+      return res.status(400).send('Unsupported language');
+    }
+    const fileName = `index.${ext}`;
 
          let testCasesPassed = 0;
     let runtime = 0;
     let memory = 0;
-    let status = true;
+     let overallStatus = true;
+    const testResults = [];
     let errorMessage = null;
 
-    for(const test of testResult){
-        if(test.status_id==3){
-           testCasesPassed++;
-           runtime = runtime+parseFloat(test.time)
-           memory = Math.max(memory,test.memory);
-        }else{
-          if(test.status_id==4){
-            status = false
-            errorMessage = test.stderr
+        for(const test of problem.visibleTestCases){
+        try {
+            console.log('Test input:', test.input, '| Type:', typeof test.input);
+            const response= await axios.post('https://onecompiler-apis.p.rapidapi.com/api/v1/run', 
+            {
+                language,
+                stdin: test.input,
+                files: [
+                    {
+                        name: fileName,
+                    content: code
+                    }
+                    ]
+                },
+                {
+                headers: { 
+                    'x-rapidapi-key': process.env.RAPIDAPI_KEY,
+                    'x-rapidapi-host': 'onecompiler-apis.p.rapidapi.com',
+                    'Content-Type': 'application/json'
+                 },
+                 timeout: 15000
+            }
+        );
+
+        console.log('hi');
+        const data = response.data;
+        const stdout = data.stdout || '';
+        const stderr = data.stderr || ''; // compilation/runtime error
+        const executionTime = parseFloat(data.executionTime) || 0; // in seconds
+        const memoryUsed = parseInt(data.memoryUsed) || 0;
+
+        const expected = test.output.trim();
+        const actual = stdout.trim();
+        const passed = data.status === 'success' && actual === expected;
+
+        if (passed) {
+          testCasesPassed++;
+        } else {
+          overallStatus = false;
+          // Capture first error message (if any)
+          if (!errorMessage) {
+            errorMessage = stderr || (data.status !== 'success' ? 'Execution error' : 'Output mismatch');
           }
-          else{
-            status = false
-            errorMessage = test.stderr
-          }
+        }
+
+        runtime += executionTime;
+        if (memoryUsed > memory) memory = memoryUsed;
+
+         testResults.push({
+          passed,
+          stdout,
+          stderr,
+          executionTime,
+          memory: memoryUsed,
+          status: data.status,
+        });
+        }
+        catch(err) {
+            overallStatus = false;
+        if (!errorMessage) {
+          errorMessage = err.message || 'Request failed';
+        }
+        testResults.push({
+          passed: false,
+          stdout: '',
+          stderr: err.message,
+          executionTime: 0,
+          memory: 0,
+          status: 'error',
+        });
         }
     }
 
+
     res.status(201).json({
-    success:status,
-    testCases: testResult,
-    runtime,
-    memory
+     success: overallStatus,
+      testCases: testResults,
+      runtime: runtime, // total CPU time across all test cases
+      memory: memory, // peak memory usage
+      testCasesPassed, // if needed
+      errorMessage, // first error encountered
     });
     }
     catch(err) {
+        console.error(err);
         res.status(500).send("internal server error");
     }
 
