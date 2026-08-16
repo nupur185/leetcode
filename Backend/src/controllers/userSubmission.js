@@ -210,7 +210,7 @@ const runCode= async (req,res)=> {
                 },
                 {
                 headers: { 
-                    'x-rapidapi-key': 'a62c243260mshad93c08e2bbe1dcp135b34jsn58afbc021dbf',
+                    'x-rapidapi-key': process.env.RAPIDAPI_KEY,
                     'x-rapidapi-host': 'onecompiler-apis.p.rapidapi.com',
                     'Content-Type': 'application/json'
                  },
