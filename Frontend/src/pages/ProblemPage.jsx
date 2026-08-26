@@ -34,7 +34,7 @@ const ProblemPage = () => {
         
         const response = await axiosClient.get(`/problem/problemById/${problemId}`);
         
-        const initialCode = response.data.startCode.find(sc => sc.language === langMap[selectedLanguage]).initialCode;
+        const initialCode = response.data.startCode.find(sc => sc.language.toLowerCase() === langMap[selectedLanguage]).initialCode;
 
         console.log(initialCode);
         setProblem(response.data);
@@ -57,7 +57,7 @@ const ProblemPage = () => {
   // Update code when language changes
   useEffect(() => {
     if (problem) {
-      const initialCode = problem.startCode.find(sc => sc.language === langMap[selectedLanguage]).initialCode;
+      const initialCode = problem.startCode.find(sc => sc.language.toLowerCase() === langMap[selectedLanguage]).initialCode;
       setCode(initialCode);
     }
   }, [selectedLanguage, problem]);
