@@ -3,6 +3,7 @@ import { NavLink } from 'react-router'; // Fixed import
 import { useDispatch, useSelector } from 'react-redux';
 import axiosClient from '../utils/axiosClient';
 import { logoutUser } from '../authSlice';
+import ThemeToggle from '../components/ThemeToggle';
 
 function Homepage() {
   const dispatch = useDispatch();
@@ -72,6 +73,7 @@ function Homepage() {
             </ul>
           </div>
         </div>
+        <ThemeToggle />
       </nav>
 
       {/* Main Content */}

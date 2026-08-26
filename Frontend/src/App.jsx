@@ -17,6 +17,14 @@ import Landingpage from "./pages/Landingpage";
 function App() {
 
   const dispatch= useDispatch();
+
+  const mode = useSelector((s) => s.theme.mode);
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', mode);
+    localStorage.setItem('theme', mode);
+  }, [mode]);
+
   //  user already authenticated or not
   const {isAuthenticated,user,loading} = useSelector((state)=>state.auth);
 

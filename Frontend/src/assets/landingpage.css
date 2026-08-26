@@ -18,7 +18,10 @@ html {
 
 /* Dotted grid, faded toward the edges */
 .lp-grid {
-  background-image: radial-gradient(rgba(255, 255, 255, 0.06) 1px, transparent 1px);
+background-image: radial-gradient(
+    color-mix(in oklab, var(--color-base-content) 8%, transparent) 1px,
+    transparent 1px
+  );
   background-size: 34px 34px;
   -webkit-mask-image: radial-gradient(ellipse 90% 60% at 50% 0%, #000 35%, transparent 100%);
   mask-image: radial-gradient(ellipse 90% 60% at 50% 0%, #000 35%, transparent 100%);

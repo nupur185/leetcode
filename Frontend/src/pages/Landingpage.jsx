@@ -9,6 +9,7 @@ import axios from 'axios';
 import { useNavigate } from 'react-router';
 import toast, { Toaster } from 'react-hot-toast';
 import '../assets/landingpage.css';
+import ThemeToggle from '../components/ThemeToggle';
 
 const BRAND = 'CodePeak';
 const PISTON_URL = 'https://emkc.org/api/v2/piston/execute';
@@ -88,7 +89,7 @@ const HERO_LINES = [
 function Eyebrow({ n, children }) {
   return (
     <div className="flex items-center gap-2 font-code text-xs uppercase tracking-[0.2em] text-emerald-400/90">
-      <span className="text-slate-600">// {n}</span>
+      <span className="text-base-content/40">// {n}</span>
       {children}
     </div>
   );
@@ -96,12 +97,12 @@ function Eyebrow({ n, children }) {
 
 function FeatureCard({ icon: Icon, title, desc }) {
   return (
-    <div className="group relative overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03] p-6 transition duration-300 hover:-translate-y-1 hover:border-emerald-400/40 hover:bg-white/[0.05]">
-      <div className="mb-4 inline-flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-400/20 to-cyan-400/10 text-emerald-300 ring-1 ring-white/10">
+    <div className="group relative overflow-hidden rounded-2xl border border-base-content/10 bg-base-200 p-6 transition duration-300 hover:-translate-y-1 hover:border-emerald-400/40 hover:bg-base-300">
+      <div className="mb-4 inline-flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-400/20 to-cyan-400/10 text-emerald-300 ring-1 ring-base-content/10">
         <Icon className="h-5 w-5" />
       </div>
-      <h3 className="font-display text-lg font-semibold text-white">{title}</h3>
-      <p className="mt-2 text-sm leading-relaxed text-slate-400">{desc}</p>
+      <h3 className="font-display text-lg font-semibold text-base-content">{title}</h3>
+      <p className="mt-2 text-sm leading-relaxed text-base-content/70">{desc}</p>
       <div className="pointer-events-none absolute -right-10 -top-10 h-24 w-24 rounded-full bg-emerald-400/0 blur-2xl transition group-hover:bg-emerald-400/10" />
     </div>
   );
@@ -201,11 +202,13 @@ export default function Landingpage() {
   };
 
   return (
-    <div className="lp-root relative min-h-screen bg-[#05070a] text-slate-200 antialiased">
+    <div className="lp-root relative min-h-screen bg-base-100 text-base-content antialiased">
       <Toaster
         position="bottom-right"
         toastOptions={{
-          style: { background: '#0a0f16', color: '#e2e8f0', border: '1px solid rgba(255,255,255,0.1)' },
+          style: { background: 'var(--color-base-200)',
+            color: 'var(--color-base-content)',
+            border: '1px solid var(--color-base-300)', },
         }}
       />
 
@@ -217,13 +220,13 @@ export default function Landingpage() {
       </div>
 
       {/* ───────────────────────── Header ───────────────────────── */}
-      <header className="fixed inset-x-0 top-0 z-50 border-b border-white/5 bg-[#05070a]/70 backdrop-blur-xl">
+      <header className="fixed inset-x-0 top-0 z-50 border-b border-base-content/10 bg-base-100/70 backdrop-blur-xl">
         <nav className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
           <button onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="flex items-center gap-2">
             <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-emerald-400 to-cyan-400 text-slate-900">
               <Code2 className="h-5 w-5" />
             </span>
-            <span className="font-display text-lg font-bold tracking-tight text-white">{BRAND}</span>
+            <span className="font-display text-lg font-bold tracking-tight text-base-content">{BRAND}</span>
           </button>
 
           <div className="hidden items-center gap-1 md:flex">
@@ -231,7 +234,7 @@ export default function Landingpage() {
               <button
                 key={item.label}
                 onClick={() => handleNav(item)}
-                className="rounded-lg px-3 py-2 text-sm font-medium text-slate-300 transition hover:bg-white/5 hover:text-white"
+                className="rounded-lg px-3 py-2 text-sm font-medium text-base-content/70 transition hover:bg-base-content/5 hover:text-base-content"
               >
                 {item.label}
               </button>
@@ -241,35 +244,37 @@ export default function Landingpage() {
           <div className="hidden items-center gap-3 md:flex">
             <button
               onClick={() => navigate('/login')}
-              className="rounded-lg border border-white/15 px-4 py-2 text-sm font-semibold text-white transition hover:border-white/30 hover:bg-white/5"
+              className="rounded-lg border border-base-content/20 px-4 py-2 text-sm font-semibold text-base-content transition hover:border-base-content/40 hover:bg-base-content/5"
             >
               Sign in
             </button>
+            <ThemeToggle />
           </div>
 
-          <button className="md:hidden text-slate-200" onClick={() => setMobileOpen((o) => !o)} aria-label="Menu">
+          <button className="md:hidden text-base-content" onClick={() => setMobileOpen((o) => !o)} aria-label="Menu">
             {mobileOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
           </button>
         </nav>
 
         {mobileOpen && (
-          <div className="border-t border-white/5 bg-[#05070a]/95 px-4 py-4 md:hidden">
+          <div className="border-t border-base-content/10 bg-base-100/95 px-4 py-4 md:hidden">
             <div className="flex flex-col gap-1">
               {NAV.map((item) => (
                 <button
                   key={item.label}
                   onClick={() => handleNav(item)}
-                  className="rounded-lg px-3 py-3 text-left text-sm font-medium text-slate-200 hover:bg-white/5"
+                  className="rounded-lg px-3 py-3 text-left text-sm font-medium text-base-content hover:bg-base-content/5"
                 >
                   {item.label}
                 </button>
               ))}
               <button
                 onClick={() => navigate('/login')}
-                className="mt-2 rounded-lg border border-white/15 px-3 py-3 text-sm font-semibold text-white hover:bg-white/5"
+                className="mt-1 rounded-lg border border-base-content/20 px-3 py-3 text-sm font-semibold text-base-content hover:bg-base-content/5"
               >
                 Sign in
               </button>
+              <ThemeToggle />
             </div>
           </div>
         )}
@@ -283,12 +288,12 @@ export default function Landingpage() {
               <Sparkles className="h-3.5 w-3.5" /> Practice. Compete. Get hired.
             </span>
 
-            <h1 className="mt-6 font-display text-4xl font-bold leading-[1.1] tracking-tight text-white sm:text-5xl lg:text-6xl">
+            <h1 className="mt-6 font-display text-4xl font-bold leading-[1.1] tracking-tight text-base-content sm:text-5xl lg:text-6xl">
               Get sharp on the{' '}
               <span className="lp-gradient-text">problems that matter</span>.
             </h1>
 
-            <p className="mt-6 max-w-xl text-lg leading-relaxed text-slate-400">
+            <p className="mt-6 max-w-xl text-lg leading-relaxed text-base-content/70">
               A modern arena to master data structures, ace technical interviews and
               write code that runs — all in your browser, no setup required.
             </p>
@@ -303,7 +308,7 @@ export default function Landingpage() {
               </button>
               <button
                 onClick={() => scrollTo('explore')}
-                className="inline-flex items-center gap-2 rounded-xl border border-white/15 px-6 py-3 text-sm font-semibold text-white transition hover:border-white/30 hover:bg-white/5"
+                className="inline-flex items-center gap-2 rounded-xl border border-base-content/20 px-6 py-3 text-sm font-semibold text-base-content transition hover:border-base-content/40 hover:bg-base-content/5"
               >
                 <Compass className="h-4 w-4" /> Explore problems
               </button>
@@ -312,8 +317,8 @@ export default function Landingpage() {
             <dl className="mt-12 grid max-w-lg grid-cols-2 gap-6 sm:grid-cols-4">
               {STATS.map((s) => (
                 <div key={s.label}>
-                  <dt className="font-display text-2xl font-bold text-white">{s.value}</dt>
-                  <dd className="mt-1 text-xs uppercase tracking-wide text-slate-500">{s.label}</dd>
+                  <dt className="font-display text-2xl font-bold text-base-content">{s.value}</dt>
+                  <dd className="mt-1 text-xs uppercase tracking-wide text-base-content/50">{s.label}</dd>
                 </div>
               ))}
             </dl>
@@ -348,10 +353,10 @@ export default function Landingpage() {
       {/* ───────────────────────── Explore ───────────────────────── */}
       <section id="explore" className="mx-auto max-w-7xl scroll-mt-20 px-4 py-20 sm:px-6 lg:px-8">
         <Eyebrow n="01">Explore</Eyebrow>
-        <h2 className="mt-3 max-w-2xl font-display text-3xl font-bold tracking-tight text-white sm:text-4xl">
+        <h2 className="mt-3 max-w-2xl font-display text-3xl font-bold tracking-tight text-base-content sm:text-4xl">
           Everything you need to keep learning
         </h2>
-        <p className="mt-4 max-w-2xl text-slate-400">
+        <p className="mt-4 max-w-2xl text-base-content/70">
           From your first array problem to your final on-site — dive into the parts of the
           platform that push you forward.
         </p>
@@ -364,13 +369,13 @@ export default function Landingpage() {
       </section>
 
       {/* ───────────────────────── Product ───────────────────────── */}
-      <section id="product" className="scroll-mt-20 border-y border-white/5 bg-white/[0.02]">
+      <section id="product" className="scroll-mt-20 border-y border-base-content/10 bg-base-200">
         <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
           <Eyebrow n="02">Product</Eyebrow>
-          <h2 className="mt-3 max-w-2xl font-display text-3xl font-bold tracking-tight text-white sm:text-4xl">
+          <h2 className="mt-3 max-w-2xl font-display text-3xl font-bold tracking-tight text-base-content sm:text-4xl">
             A platform built for people who ship
           </h2>
-          <p className="mt-4 max-w-2xl text-slate-400">
+          <p className="mt-4 max-w-2xl text-base-content/70">
             Powerful tooling that stays out of your way, so you can focus on the one thing
             that counts — solving the problem.
           </p>
@@ -489,22 +494,22 @@ export default function Landingpage() {
       </section>
 
       {/* ───────────────────────── Footer ───────────────────────── */}
-      <footer className="border-t border-white/5">
+      <footer className="border-t border-base-content/10">
         <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-6 px-4 py-10 sm:flex-row sm:px-6 lg:px-8">
           <div className="flex items-center gap-2">
             <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-emerald-400 to-cyan-400 text-slate-900">
               <Code2 className="h-5 w-5" />
             </span>
-            <span className="font-display font-bold text-white">{BRAND}</span>
+            <span className="font-display font-bold text-base-content">{BRAND}</span>
           </div>
-          <p className="text-sm text-slate-500">© {new Date().getFullYear()} {BRAND}. Built for developers.</p>
-          <div className="flex items-center gap-4 text-slate-400">
+          <p className="text-sm text-base-content/50">© {new Date().getFullYear()} {BRAND}. Built for developers.</p>
+          <div className="flex items-center gap-4 text-base-content/60">
             <a href="#" className="transition hover:text-white" aria-label="GitHub">
                 <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/>
                 </svg>
             </a>
-            <a href="#" className="transition hover:text-white" aria-label="GitHub">
+            <a href="#" className="transition hover:text-white" aria-label="Twitter">
                 <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/>
                 </svg>
