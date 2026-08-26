@@ -1,0 +1,66 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+html {
+  scroll-behavior: smooth;
+}
+
+.lp-root {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+.font-display {
+  font-family: 'Space Grotesk', 'Inter', sans-serif;
+}
+
+.font-code {
+  font-family: 'JetBrains Mono', ui-monospace, 'SF Mono', monospace;
+}
+
+/* Dotted grid, faded toward the edges */
+.lp-grid {
+  background-image: radial-gradient(rgba(255, 255, 255, 0.06) 1px, transparent 1px);
+  background-size: 34px 34px;
+  -webkit-mask-image: radial-gradient(ellipse 90% 60% at 50% 0%, #000 35%, transparent 100%);
+  mask-image: radial-gradient(ellipse 90% 60% at 50% 0%, #000 35%, transparent 100%);
+}
+
+/* Floating ambient glow blobs */
+.lp-blob {
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(90px);
+  opacity: 0.55;
+  animation: lp-float 8s ease-in-out infinite;
+}
+
+@keyframes lp-float {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-26px); }
+}
+
+/* Animated gradient headline */
+.lp-gradient-text {
+  background: linear-gradient(90deg, #34d399, #22d3ee, #34d399);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: lp-pan 6s linear infinite;
+}
+
+@keyframes lp-pan {
+  to { background-position: 200% center; }
+}
+
+/* Slim custom scrollbar for the output console */
+.lp-console::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+.lp-console::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+}
+.lp-console::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.2);
+}

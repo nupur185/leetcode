@@ -12,6 +12,7 @@ import AdminDelete from "./components/AdminDelete";
 import AdminVideo from "./components/AdminVideo";
 import AdminUpload from "./components/AdminUpload";
 import Payment from "./pages/Payment";
+import Landingpage from "./pages/Landingpage";
 
 function App() {
 
@@ -32,7 +33,7 @@ function App() {
   return (
     <>
       <Routes>
-        <Route path="/" element= {isAuthenticated? <Homepage></Homepage>: <Navigate to="/signup"/>}></Route>
+        <Route path="/" element= {isAuthenticated? <Homepage></Homepage>: <Navigate to="/landing"/>}></Route>
         <Route path="/login" element= {isAuthenticated? <Navigate to="/" /> : <Login></Login>}></Route>
         <Route path="/signup" element= {isAuthenticated? <Navigate to="/" /> : <Signup></Signup>}></Route>
         <Route path="/admin" element={isAuthenticated && user?.role === 'admin' ? <Admin/> : <Navigate to="/"/>}></Route>
@@ -42,6 +43,7 @@ function App() {
         <Route path="/admin/upload/:problemId" element={isAuthenticated && user?.role === 'admin' ? <AdminUpload /> : <Navigate to="/" />}></Route>
         <Route path="/problem/:problemId"  element={<ProblemPage />}></Route>
         <Route path="/payment"  element={<Payment />}></Route>
+        <Route path="/landing" element={<Landingpage />}></Route>
       </Routes>
     </>
   )
