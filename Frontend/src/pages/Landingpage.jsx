@@ -10,7 +10,7 @@ import { useNavigate } from 'react-router';
 import toast, { Toaster } from 'react-hot-toast';
 import '../assets/landingpage.css';
 
-const BRAND = 'CodeArena';
+const BRAND = 'CodePeak';
 const PISTON_URL = 'https://emkc.org/api/v2/piston/execute';
 
 const NAV = [
@@ -192,7 +192,7 @@ export default function Landingpage() {
   };
 
   const beforeEditorMount = (monaco) => {
-    monaco.editor.defineTheme('codearena', {
+    monaco.editor.defineTheme('codepeak', {
       base: 'vs-dark',
       inherit: true,
       rules: [],
@@ -434,7 +434,7 @@ export default function Landingpage() {
             <div className="h-[440px] bg-[#0a0f16]">
               <Editor
                 height="100%"
-                theme="codearena"
+                theme="codepeak"
                 language={LANGUAGES[language].monaco}
                 value={code}
                 onChange={(v) => setCode(v ?? '')}
