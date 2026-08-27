@@ -31,6 +31,14 @@ function Login() {
   return (
     <div className="min-h-screen flex items-center justify-center p-4"> {/* Centering container */}
       <div className="card w-96 bg-base-100 shadow-xl"> {/* Existing card styling */}
+        <button
+  type="button"
+  onClick={() => navigate(-1)}
+  className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2 z-10"
+  aria-label="Close"
+>
+  ✕
+</button>
         <div className="card-body">
           <h2 className="card-title justify-center text-3xl">Leetcode</h2> {/* Centered title */}
           <form onSubmit={handleSubmit(onSubmit)}>
